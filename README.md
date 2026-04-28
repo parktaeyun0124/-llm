@@ -3,7 +3,9 @@
 > **로컬 LLM(Ollama)** 위에 올라간, 외부 의존성 없는 풀스택 AI 채팅 웹앱.
 > FastAPI 백엔드 하나가 API + 정적 UI를 동시에 서빙하므로 Node.js · 빌드 도구 · 외부 CDN 인증 같은 번거로움이 전혀 없습니다.
 
-![Ollama FastAPI Chat Preview](./preview.png)
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/parktaeyun0124/-llm@main/preview.png" alt="Ollama FastAPI Chat Preview" width="900">
+</p>
 
 ---
 
