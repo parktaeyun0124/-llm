@@ -274,7 +274,7 @@
             <i data-lucide="sparkles" style="color: #60a5fa;"></i>
             <div class="logo">Local Image Studio</div>
         </div>
-        <div class="badge" id="model-badge">로딩중...</div>
+        <div class="badge" id="model-badge">백엔드 URL 설정 필요</div>
     </header>
 
     <main>
@@ -290,6 +290,13 @@
         </div>
 
         <div class="error" id="error"></div>
+
+        <div class="controls-row">
+            <div class="control" style="flex: 2; min-width: 280px;">
+                <label>Backend URL (로컬 서버 + Cloudflare Tunnel 등)</label>
+                <input type="text" id="backend-url" placeholder="https://xxxxx.trycloudflare.com" style="width: 100%; background: rgba(15, 23, 42, 0.8); color: white; border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px 10px; font-family: 'Inter', sans-serif; outline: none;">
+            </div>
+        </div>
 
         <div class="controls-row">
             <div class="control">
@@ -330,6 +337,25 @@
         const seedInput = document.getElementById('seed');
         const badge = document.getElementById('model-badge');
         const meta = document.getElementById('meta');
+        const backendInput = document.getElementById('backend-url');
+
+        const BACKEND_KEY = 'sdxl_backend_url';
+
+        function getBackend() {
+            const saved = localStorage.getItem(BACKEND_KEY) || '';
+            return saved.replace(/\/+$/, '');
+        }
+
+        function api(path) {
+            const base = getBackend();
+            return base ? base + path : path;
+        }
+
+        backendInput.value = localStorage.getItem(BACKEND_KEY) || '';
+        backendInput.addEventListener('change', () => {
+            localStorage.setItem(BACKEND_KEY, backendInput.value.trim());
+            loadInfo();
+        });
 
         stepsInput.addEventListener('input', () => { stepsNum.textContent = stepsInput.value; });
 
@@ -346,8 +372,12 @@
         });
 
         async function loadInfo() {
+            if (!getBackend()) {
+                badge.textContent = '백엔드 URL 설정 필요';
+                return;
+            }
             try {
-                const r = await fetch('/api/info');
+                const r = await fetch(api('/api/info'));
                 const data = await r.json();
                 badge.textContent = `${data.model.split('/').pop()} · ${data.device}`;
             } catch {
@@ -375,6 +405,11 @@
             const prompt = promptInput.value.trim();
             if (!prompt) return;
 
+            if (!getBackend()) {
+                showError('Backend URL을 먼저 입력하세요 (예: https://xxxxx.trycloudflare.com)');
+                return;
+            }
+
             clearError();
             setLoading(true);
 
@@ -387,7 +422,7 @@
 
             const t0 = performance.now();
             try {
-                const r = await fetch('/api/generate', {
+                const r = await fetch(api('/api/generate'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
