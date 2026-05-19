@@ -1,7 +1,6 @@
 fastapi
 uvicorn[standard]
 pydantic
-torch>=2.1
 diffusers>=0.27
 transformers>=4.38
 accelerate

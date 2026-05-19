@@ -4,13 +4,13 @@ import os
 from contextlib import asynccontextmanager
 
 import torch
-from diffusers import AutoencoderKL, AutoPipelineForText2Image
+from diffusers import AutoPipelineForText2Image
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-MODEL_ID = os.environ.get("MODEL_ID", "stabilityai/sdxl-turbo")
+MODEL_ID = os.environ.get("MODEL_ID", "stabilityai/sd-turbo")
 
 
 def pick_device() -> tuple[str, torch.dtype]:
@@ -26,11 +26,6 @@ def load_pipeline():
     kwargs = {"torch_dtype": dtype}
     if dtype == torch.float16:
         kwargs["variant"] = "fp16"
-    # SDXL fp16 VAE produces black images on MPS. Swap in the community fp16-fix VAE.
-    if device == "mps":
-        kwargs["vae"] = AutoencoderKL.from_pretrained(
-            "madebyollin/sdxl-vae-fp16-fix", torch_dtype=dtype
-        )
     pipe = AutoPipelineForText2Image.from_pretrained(MODEL_ID, **kwargs)
     pipe = pipe.to(device)
     return pipe, device
